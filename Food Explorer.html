@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Explorer — AI-детектив харчування</title>
+  <style>
+    :root {
+      --bg: #fbfdf8;
+      --card: #ffffff;
+      --text: #14351f;
+      --muted: #71806f;
+      --green-dark: #0f4f24;
+      --green: #7ac70c;
+      --lime: #a7df1e;
+      --avocado: #ecf8a8;
+      --pit: #a46123;
+      --line: #e5efd9;
+      --soft: #f2f9e9;
+      --shadow: 0 22px 60px rgba(15, 79, 36, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(167, 223, 30, 0.18), transparent 30%),
+        radial-gradient(circle at 88% 16%, rgba(122, 199, 12, 0.12), transparent 28%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .brand svg { width: 76px; height: 76px; flex: 0 0 auto; }
+
+    .brand-text {
+      font-size: 28px;
+      line-height: 1;
+      letter-spacing: -0.8px;
+      font-weight: 800;
+    }
+
+    .brand-text span:first-child { color: var(--green-dark); }
+    .brand-text span:last-child { color: var(--green); font-weight: 500; }
+
+    nav {
+      display: flex;
+      gap: 26px;
+      font-size: 14px;
+      background: rgba(255,255,255,.72);
+      border: 1px solid var(--line);
+      padding: 12px 18px;
+      border-radius: 999px;
+      backdrop-filter: blur(12px);
+    }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    nav a:hover { color: var(--green-dark); }
+
+    .hero {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 52px 22px 44px;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 42px;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 15px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.78);
+      color: var(--green-dark);
+      font-weight: 800;
+      font-size: 13px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      font-size: clamp(42px, 6vw, 76px);
+      line-height: 0.94;
+      letter-spacing: -2.6px;
+      margin: 0 0 24px;
+      max-width: 760px;
+    }
+
+    .accent { color: var(--green); }
+
+    .lead {
+      font-size: 19px;
+      color: var(--muted);
+      line-height: 1.68;
+      max-width: 650px;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 14px;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+
+    button, .btn {
+      border: 0;
+      border-radius: 18px;
+      padding: 15px 21px;
+      font-weight: 850;
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.25s ease;
+      font-size: 15px;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--green-dark), #18743b);
+      color: white;
+      box-shadow: 0 14px 30px rgba(15, 79, 36, .22);
+    }
+
+    .secondary {
+      background: white;
+      color: var(--green-dark);
+      border: 1px solid var(--line);
+    }
+
+    button:hover, .btn:hover { transform: translateY(-2px); }
+
+    .mockup {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 38px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mockup::before {
+      content: "";
+      position: absolute;
+      width: 230px;
+      height: 230px;
+      border-radius: 50%;
+      background: rgba(167, 223, 30, .18);
+      right: -70px;
+      top: -70px;
+    }
+
+    .app-top {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .app-title { font-weight: 900; font-size: 19px; }
+    .app-pill { background: var(--soft); color: var(--green-dark); padding: 8px 12px; border-radius: 999px; font-weight: 800; font-size: 12px; }
+
+    .scan-box {
+      position: relative;
+      border: 2px dashed #b8db78;
+      border-radius: 30px;
+      height: 235px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      background: linear-gradient(180deg, #ffffff, #f6fbef);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .ai-live-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 28px;
+      display: none;
+    }
+
+    .model-select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--green-dark);
+      border-radius: 16px;
+      padding: 13px 14px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .scan-box svg { width: 94px; height: 94px; margin-bottom: 10px; }
+
+    .nutri-card {
+      background: #fff;
+      border-radius: 22px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 24px rgba(15,79,36,.05);
+    }
+
+    .nutri-card strong { display: block; margin-bottom: 5px; }
+    .nutri-card p { margin: 0; color: var(--muted); }
+
+    .bar {
+      height: 9px;
+      background: #edf4e7;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--green-dark), var(--lime));
+      border-radius: 999px;
+    }
+
+    section {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 72px 22px;
+    }
+
+    .section-title {
+      font-size: clamp(30px, 4vw, 48px);
+      margin: 0 0 14px;
+      letter-spacing: -1.4px;
+    }
+
+    .section-subtitle {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 790px;
+      line-height: 1.65;
+      margin: 0 0 34px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: rgba(255,255,255,.82);
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      padding: 26px;
+      box-shadow: 0 12px 34px rgba(15,79,36,.06);
+    }
+
+    .card-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      background: var(--soft);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      margin-bottom: 18px;
+    }
+
+    .card h3 { margin: 0 0 10px; font-size: 21px; }
+    .card p { margin: 0; color: var(--muted); line-height: 1.58; }
+
+    .game {
+      background: #ffffff;
+      border-radius: 36px;
+      padding: 28px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .mission {
+      background: linear-gradient(135deg, #f3faec, #ffffff);
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      padding: 26px;
+      min-height: 330px;
+    }
+
+    .mission h3 {
+      font-size: 30px;
+      margin: 0 0 12px;
+      letter-spacing: -0.6px;
+    }
+
+    .mission p { color: var(--muted); line-height: 1.55; }
+
+    .score-box {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .score-item {
+      background: white;
+      border-radius: 19px;
+      padding: 14px 10px;
+      text-align: center;
+      border: 1px solid var(--line);
+    }
+
+    .score-item span { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .score-item strong { display: block; font-size: 25px; color: var(--green-dark); margin-top: 4px; }
+
+    .foods {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .food {
+      background: #fbfef8;
+      border: 2px solid transparent;
+      border-radius: 24px;
+      padding: 16px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: .22s ease;
+      min-height: 118px;
+    }
+
+    .food:hover {
+      border-color: var(--lime);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px rgba(15,79,36,.08);
+    }
+
+    .food .emoji { font-size: 40px; display: block; margin-bottom: 4px; }
+    .food strong { display: block; color: var(--green-dark); }
+    .food small { color: var(--muted); font-weight: 700; font-size: 11px; }
+
+    .result {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 20px;
+      background: #f6fbef;
+      border: 1px solid var(--line);
+      min-height: 62px;
+      color: var(--green-dark);
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    footer {
+      padding: 38px 22px;
+      text-align: center;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+    }
+
+    @media (max-width: 900px) {
+      .hero, .game-layout { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+      nav { display: none; }
+      .brand svg { width: 58px; height: 58px; }
+      .brand-text { font-size: 22px; }
+      .foods { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+</head>
+<body>
+  <header>
+    <a class="brand" href="#about" aria-label="Food Explorer logo">
+      <svg viewBox="0 0 120 120" role="img" aria-label="Avocado logo">
+        <path d="M28 72C25 47 43 28 65 26" fill="none" stroke="#7ac70c" stroke-width="7" stroke-linecap="round"/>
+        <circle cx="28" cy="84" r="4" fill="#7ac70c"/>
+        <circle cx="86" cy="39" r="3.5" fill="#7ac70c"/>
+        <circle cx="96" cy="48" r="3.5" fill="#7ac70c"/>
+        <path d="M63 23c-3-9 6-16 15-14 8 2 13 9 12 17-9 3-18 3-27-3z" fill="#7ac70c"/>
+        <path d="M58 22c19 8 35 27 31 52-3 19-18 32-36 31-21-1-35-16-34-36 1-22 17-43 39-47z" fill="#0f4f24"/>
+        <path d="M55 27c17 6 28 23 25 44-3 16-15 27-29 26-17-1-28-14-27-30 1-18 13-36 31-40z" fill="#7ac70c"/>
+        <path d="M54 34c13 5 22 18 20 34-2 13-12 22-23 21-13-1-22-11-21-24 1-14 10-28 24-31z" fill="#ecf8a8"/>
+        <circle cx="53" cy="67" r="16" fill="#a46123"/>
+        <path d="M45 58c3-5 8-7 13-6" fill="none" stroke="#fff1be" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text"><span>Food</span> <span>Explorer</span></div>
+    </a>
+    <nav>
+      <a href="#about">Проєкт</a>
+      <a href="#features">Можливості</a>
+      <a href="#game">Гра</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="about">
+      <div>
+        <div class="badge">🥑 AI • EdTech • Healthy Food Game</div>
+        <h1>AI-детектив <span class="accent">збалансованого</span> харчування</h1>
+        <p class="lead">
+          Food Explorer — мінімалістичний освітньо-ігровий застосунок, який розпізнає продукти, пояснює їхню користь і навчає здоровому вибору через короткі місії.
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="#game">Спробувати гру</a>
+          <a class="btn secondary" href="#features">Можливості застосунку</a>
+        </div>
+      </div>
+
+      <div class="mockup">
+        <div class="app-top">
+          <div class="app-title">Food Scan</div>
+          <div class="app-pill">Level 01</div>
+        </div>
+        <div class="scan-box ai-live-box">
+          <video id="webcam" autoplay playsinline muted></video>
+          <canvas id="snapshot" hidden></canvas>
+          <div id="cameraPlaceholder">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <path d="M28 72C25 47 43 28 65 26" fill="none" stroke="#7ac70c" stroke-width="7" stroke-linecap="round"/>
+              <path d="M58 22c19 8 35 27 31 52-3 19-18 32-36 31-21-1-35-16-34-36 1-22 17-43 39-47z" fill="#0f4f24"/>
+              <path d="M55 27c17 6 28 23 25 44-3 16-15 27-29 26-17-1-28-14-27-30 1-18 13-36 31-40z" fill="#7ac70c"/>
+              <path d="M54 34c13 5 22 18 20 34-2 13-12 22-23 21-13-1-22-11-21-24 1-14 10-28 24-31z" fill="#ecf8a8"/>
+              <circle cx="53" cy="67" r="16" fill="#a46123"/>
+            </svg>
+            <strong>AI Scan</strong><br />
+            Наведи камеру на продукт
+          </div>
+        </div>
+        <div class="actions" style="margin: 0 0 14px; gap: 8px;">
+          <button class="primary" onclick="startAI()">Увімкнути AI</button>
+          <button class="secondary" onclick="stopCamera()">Стоп</button>
+        </div>
+        <select id="modelSelect" class="model-select" onchange="changeModel()">
+          <option value="vitamins">Вітаміни / нутрієнти</option>
+          <option value="allergens">Алергени</option>
+          <option value="healthyFastfood">Здорове / фастфуд</option>
+          <option value="ripeUnripe">Стигле / нестигле</option>
+        </select>
+        <div class="nutri-card ai-result-card">
+          <strong id="aiLabel">AI-модель ще не запущена</strong>
+          <p id="aiInfo">Натисни «Увімкнути AI» для розпізнавання продукту камерою.</p>
+          <div class="bar"><span id="aiConfidence" style="width: 0%"></span></div>
+        </div>
+        <div class="nutri-card">
+          <strong>🥑 Авокадо</strong>
+          <p>Вітамін E • Корисні жири • Енергія</p>
+          <div class="bar"><span style="width: 92%"></span></div>
+        </div>
+        <div class="nutri-card">
+          <strong>🥦 Броколі</strong>
+          <p>Вітамін C • Клітковина • Антиоксиданти</p>
+          <div class="bar"><span style="width: 86%"></span></div>
+        </div>
+        <div class="nutri-card">
+          <strong>🐟 Лосось</strong>
+          <p>Омега-3 • Білок • Вітамін D</p>
+          <div class="bar"><span style="width: 78%"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2 class="section-title">Що робить застосунок?</h2>
+      <p class="section-subtitle">
+        Сайт виконаний у стилі логотипу: білий простір, темно-зелений текст, лаймові акценти та чиста логіка взаємодії.
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <div class="card-icon">🤖</div>
+          <h3>AI-розпізнавання</h3>
+          <p>Камера визначає продукт і пов’язує його з вітамінами, мінералами, білками, жирами та клітковиною.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🎮</div>
+          <h3>Гейміфікація</h3>
+          <p>Користувач виконує місії, отримує бали, відкриває рівні та навчається через дію.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">👩🍳</div>
+          <h3>Профорієнтація</h3>
+          <p>Підходить для кулінарного хабу, учнів після 9 класу та дорослих, які обирають здоровий стиль життя.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="game">
+      <h2 class="section-title">Вбудована гра: Nutrition Detective</h2>
+      <p class="section-subtitle">
+        Обери правильний продукт для місії. Кожна правильна відповідь додає бали та відкриває новий рівень харчової грамотності.
+      </p>
+
+      <div class="game">
+        <div class="game-layout">
+          <div class="mission">
+            <h3 id="missionTitle">Місія 1</h3>
+            <p id="missionText">Знайди продукт, багатий на вітамін C.</p>
+            <div class="score-box">
+              <div class="score-item"><span>Бали</span><strong id="score">0</strong></div>
+              <div class="score-item"><span>Рівень</span><strong id="level">1</strong></div>
+              <div class="score-item"><span>Серія</span><strong id="streak">0</strong></div>
+            </div>
+            <div class="result" id="result">Натисни на продукт, щоб почати розслідування.</div>
+            <button class="primary" style="margin-top: 18px;" onclick="nextMission()">Нова місія</button>
+          </div>
+
+          <div class="foods" id="foods"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Food Explorer © 2026 • AI-рішення для здорового харчування та цифрової освіти
+  </footer>
+
+  <script>
+    /*
+      ПІДКЛЮЧЕННЯ TEACHABLE MACHINE
+      1. У Teachable Machine відкрийте модель → Export Model → TensorFlow.js → Upload my model.
+      2. Скопіюйте посилання виду: https://teachablemachine.withgoogle.com/models/XXXX/
+      3. Вставте його нижче у потрібне поле.
+      Важливо: файли .tm — це навчальні проєкти, а не готові web-моделі. Для сайту потрібні model.json, metadata.json і weights.bin або публічне URL-посилання.
+    */
+    const TM_MODELS = {
+      vitamins: 'https://teachablemachine.withgoogle.com/models/ZFXVRmaXT/',
+      allergens: '',
+      healthyFastfood: '',
+      ripeUnripe: ''
+    };
+
+    let tmModel = null;
+    let webcamStream = null;
+    let predictLoopId = null;
+    let activeModelKey = 'vitamins';
+
+    const nutrientInfo = {
+      'Вітамін A': 'Підтримує зір, імунітет і здоров’я шкіри.',
+      'Вітамін B1': 'Допомагає нервовій системі та енергетичному обміну.',
+      'Вітамін B2': 'Важливий для енергії, шкіри та обміну речовин.',
+      'Вітамін B3': 'Підтримує роботу нервової системи та метаболізм.',
+      'Вітамін B5': 'Бере участь в обміні жирів, білків і вуглеводів.',
+      'Вітамін B6': 'Потрібний для нервової системи та білкового обміну.',
+      'Вітамін B7': 'Підтримує волосся, шкіру та нігті.',
+      'Вітамін B9': 'Важливий для росту клітин і кровотворення.',
+      'Вітамін B12': 'Підтримує нервову систему та утворення еритроцитів.',
+      'Вітамін C': 'Підсилює імунітет і допомагає засвоювати залізо.',
+      'Вітамін D': 'Підтримує кістки, імунітет і засвоєння кальцію.',
+      'Вітамін E': 'Антиоксидант, захищає клітини організму.',
+      'Вітамін K': 'Важливий для згортання крові та здоров’я кісток.',
+      'Магній': 'Підтримує м’язи, нервову систему та енергію.',
+      'Кальцій': 'Основний мінерал для кісток і зубів.',
+      'Калій': 'Підтримує серце, м’язи та водний баланс.',
+      'Фосфор': 'Потрібний для кісток і вироблення енергії.',
+      'Залізо': 'Допомагає переносити кисень у крові.',
+      'Цинк': 'Підтримує імунітет і відновлення тканин.',
+      'Йод': 'Важливий для роботи щитоподібної залози.',
+      'Селен': 'Антиоксидантний захист і підтримка імунітету.',
+      'Мідь': 'Бере участь у кровотворенні та захисті клітин.',
+      'Марганець': 'Підтримує обмін речовин і кісткову тканину.',
+      'Білок': 'Будівельний матеріал для м’язів і тканин.',
+      'Клітковина': 'Покращує травлення та дає довше відчуття ситості.',
+      'Омега-3': 'Корисні жири для серця, мозку та судин.',
+      'Антиоксиданти': 'Захищають клітини від окисного стресу.',
+      'Повільні вуглеводи': 'Дають стабільну енергію без різких стрибків цукру.',
+      'Пробіотики': 'Підтримують здорову мікрофлору кишківника.',
+      'Насичені жири (обережно)': 'Потрібні в обмеженій кількості, надлишок небажаний.',
+      'Цукри (обережно)': 'Швидка енергія, але надлишок шкодить здоров’ю.'
+    };
+
+    async function loadTMModel(key) {
+      const baseURL = TM_MODELS[key];
+      if (!baseURL) {
+        throw new Error('Для цієї моделі ще не вставлено URL Teachable Machine. Експортуйте .tm у TensorFlow.js та додайте посилання в TM_MODELS.');
+      }
+      const modelURL = baseURL + 'model.json';
+      const metadataURL = baseURL + 'metadata.json';
+      tmModel = await tmImage.load(modelURL, metadataURL);
+      activeModelKey = key;
+      return tmModel;
+    }
+
+    async function startAI() {
+      const key = document.getElementById('modelSelect').value;
+      const label = document.getElementById('aiLabel');
+      const info = document.getElementById('aiInfo');
+      const confidence = document.getElementById('aiConfidence');
+      try {
+        label.textContent = 'Завантаження AI-моделі...';
+        info.textContent = 'Дозволь доступ до камери на пристрої.';
+        confidence.style.width = '8%';
+        await loadTMModel(key);
+        await startCamera();
+        label.textContent = 'AI-модель активна';
+        info.textContent = 'Покажи продукт у камеру.';
+        predictLoop();
+      } catch (error) {
+        label.textContent = 'Модель не запущена';
+        info.textContent = error.message;
+        confidence.style.width = '0%';
+      }
+    }
+
+    async function startCamera() {
+      stopCamera();
+      const video = document.getElementById('webcam');
+      const placeholder = document.getElementById('cameraPlaceholder');
+      webcamStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false
+      });
+      video.srcObject = webcamStream;
+      video.style.display = 'block';
+      placeholder.style.display = 'none';
+      await video.play();
+    }
+
+    function stopCamera() {
+      if (predictLoopId) cancelAnimationFrame(predictLoopId);
+      predictLoopId = null;
+      const video = document.getElementById('webcam');
+      const placeholder = document.getElementById('cameraPlaceholder');
+      if (webcamStream) webcamStream.getTracks().forEach(track => track.stop());
+      webcamStream = null;
+      if (video) {
+        video.pause();
+        video.srcObject = null;
+        video.style.display = 'none';
+      }
+      if (placeholder) placeholder.style.display = 'block';
+    }
+
+    async function predictLoop() {
+      if (!tmModel || !webcamStream) return;
+      const video = document.getElementById('webcam');
+      const predictions = await tmModel.predict(video);
+      const best = predictions.sort((a, b) => b.probability - a.probability)[0];
+      showPrediction(best);
+      predictLoopId = requestAnimationFrame(predictLoop);
+    }
+
+    function showPrediction(best) {
+      const percent = Math.round(best.probability * 100);
+      const cleanName = best.className.trim();
+      document.getElementById('aiLabel').textContent = `${cleanName} — ${percent}%`;
+      document.getElementById('aiInfo').textContent = nutrientInfo[cleanName] || getModelMessage(cleanName);
+      document.getElementById('aiConfidence').style.width = `${percent}%`;
+    }
+
+    function getModelMessage(name) {
+      if (activeModelKey === 'allergens') return `Перевір алерген: ${name}. Для харчових обмежень потрібне підтвердження дорослого або фахівця.`;
+      if (activeModelKey === 'healthyFastfood') return `Категорія харчового вибору: ${name}. Подумай, як часто та в якій кількості це варто їсти.`;
+      if (activeModelKey === 'ripeUnripe') return `Стан продукту: ${name}. Це допомагає оцінити якість і безпечність продукту.`;
+      return `Розпізнано клас: ${name}. Додайте опис цього класу в nutrientInfo.`;
+    }
+
+    async function changeModel() {
+      stopCamera();
+      tmModel = null;
+      document.getElementById('aiLabel').textContent = 'Обрано іншу модель';
+      document.getElementById('aiInfo').textContent = 'Натисни «Увімкнути AI», щоб запустити розпізнавання.';
+      document.getElementById('aiConfidence').style.width = '0%';
+    }
+
+    const foodData = [
+      { name: 'Апельсин', emoji: '🍊', tags: ['vitamin-c', 'antioxidants'], info: 'Джерело вітаміну C та антиоксидантів.' },
+      { name: 'Броколі', emoji: '🥦', tags: ['vitamin-c', 'fiber', 'vitamin-k'], info: 'Містить клітковину, вітамін C і K.' },
+      { name: 'Лосось', emoji: '🐟', tags: ['omega-3', 'protein', 'vitamin-d'], info: 'Джерело омега-3, білка та вітаміну D.' },
+      { name: 'Молоко', emoji: '🥛', tags: ['calcium', 'protein'], info: 'Містить кальцій і білок.' },
+      { name: 'Яйце', emoji: '🥚', tags: ['protein', 'selenium'], info: 'Джерело білка та селену.' },
+      { name: 'Горіхи', emoji: '🌰', tags: ['magnesium', 'healthy-fats'], info: 'Містять магній і корисні жири.' },
+      { name: 'Банан', emoji: '🍌', tags: ['potassium', 'vitamin-b6'], info: 'Джерело калію та вітаміну B6.' },
+      { name: 'Авокадо', emoji: '🥑', tags: ['vitamin-e', 'healthy-fats'], info: 'Містить вітамін E і корисні жири.' },
+      { name: 'Квасоля', emoji: '🫘', tags: ['iron', 'protein', 'fiber'], info: 'Містить залізо, білок і клітковину.' }
+    ];
+
+    const missions = [
+      { title: 'Місія 1', text: 'Знайди продукт, багатий на вітамін C.', tag: 'vitamin-c' },
+      { title: 'Місія 2', text: 'Знайди продукт з омега-3.', tag: 'omega-3' },
+      { title: 'Місія 3', text: 'Знайди джерело кальцію.', tag: 'calcium' },
+      { title: 'Місія 4', text: 'Знайди продукт із калієм.', tag: 'potassium' },
+      { title: 'Місія 5', text: 'Знайди продукт із клітковиною.', tag: 'fiber' },
+      { title: 'Місія 6', text: 'Знайди джерело вітаміну E.', tag: 'vitamin-e' }
+    ];
+
+    let currentMission = 0;
+    let score = 0;
+    let streak = 0;
+
+    function renderFoods() {
+      const container = document.getElementById('foods');
+      container.innerHTML = '';
+
+      foodData.forEach(food => {
+        const item = document.createElement('div');
+        item.className = 'food';
+        item.innerHTML = `<span class="emoji">${food.emoji}</span><strong>${food.name}</strong><br><small>${food.info}</small>`;
+        item.onclick = () => checkFood(food);
+        container.appendChild(item);
+      });
+    }
+
+    function checkFood(food) {
+      const mission = missions[currentMission];
+      const result = document.getElementById('result');
+
+      if (food.tags.includes(mission.tag)) {
+        score += 10;
+        streak += 1;
+        result.textContent = `✅ Правильно! ${food.name}: ${food.info} +10 балів.`;
+        if (streak % 3 === 0) score += 5;
+      } else {
+        streak = 0;
+        result.textContent = `🔎 Не зовсім. ${food.name} корисний продукт, але для цієї місії шукай інший нутрієнт.`;
+      }
+
+      updateStats();
+    }
+
+    function updateStats() {
+      document.getElementById('score').textContent = score;
+      document.getElementById('streak').textContent = streak;
+      document.getElementById('level').textContent = Math.max(1, Math.floor(score / 30) + 1);
+    }
+
+    function nextMission() {
+      currentMission = (currentMission + 1) % missions.length;
+      const mission = missions[currentMission];
+      document.getElementById('missionTitle').textContent = mission.title;
+      document.getElementById('missionText').textContent = mission.text;
+      document.getElementById('result').textContent = 'Нова місія активована. Обери правильний продукт.';
+    }
+
+    renderFoods();
+  </script>
+</body>
+</html>
+	
